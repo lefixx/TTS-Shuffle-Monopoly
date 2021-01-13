@@ -9,9 +9,5 @@ function onDrop(player_color)
 	-- log(Ind)
 
 	Global.call("asdf", Pos)
-	Log"heelo"
-
-
-
 
 end

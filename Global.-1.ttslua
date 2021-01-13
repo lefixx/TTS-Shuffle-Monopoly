@@ -2407,17 +2407,11 @@ function asdf(y)
 end
 
 function rollDice(theButton, theClicker)
-
-	log(theButton)
-
-	local PlayerNo
-	--
-	for i,v in ipairs(playerData) do
-		if v["Color"] == theClicker then
-			PlayerNo = i
+	for i = 1,8,1 do
+		v = playerData[i]
+		if playerData[i]["ButtonChip"].getGUID() == theButton.getGUID() then
+			v["Die1"].roll()
+			v["Die2"].roll()
 		end
 	end
-
-	playerData[PlayerNo]["Die1"].roll()
-	playerData[PlayerNo]["Die2"].roll()
 end
