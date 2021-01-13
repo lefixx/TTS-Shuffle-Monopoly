@@ -1,0 +1,15 @@
+
+
+function onDrop(player_color)
+
+
+	local Pos = self.getPosition()
+	-- local Ind = Global.call("getSquare", Pos)
+	-- log(Global.getVar("boardPoints")[Ind][2])
+	-- log(Ind)
+
+	Global.call("asdf", Pos)
+
+
+
+end
