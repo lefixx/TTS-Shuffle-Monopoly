@@ -1,43 +1,3 @@
-
-utils = {}
-
-function utils.round(float, decimals) --Eldin
-  local mult = 10^(decimals or 0)
-  return math.floor(float * mult + 0.5) / mult
-end
-
-function utils.print_selected_pos_and_rot()  --Eldin
-  local player = getSeatedPlayers()[1]
-  local objects = Player[player].getSelectedObjects()
-  local out = ""
-  for _, obj in ipairs(objects) do
-    local pos = obj.getPosition()
-    local rot = obj.getRotation()
-    out = out.."{position={"..utils.round(pos.x, 2)..", "..utils.round(pos.y, 2)..", "..utils.round(pos.z, 2).."}, rotation={"..utils.round(rot.x, 2)..", "..utils.round(rot.y, 2)..", "..utils.round(rot.z, 2).."}},\n"
-  end
-  Notes.setNotes(out)
-end
-
-function utils.print_selected_pos_and_rot_local_to_hovered()--Eldin
-  local player = getSeatedPlayers()[1]
-  local objects = Player[player].getSelectedObjects()
-  local hovered = Player[player].getHoverObject()
-  local out = ""
-  for _, obj in ipairs(objects) do
-    local pos = hovered.positionToLocal(obj.getPosition())
-    local rot = obj.getRotation()-hovered.getRotation()
-    out = out..obj.getGUID().."\n"
-  end
-  Notes.setNotes(out)  --Eldin
-end
-
-function TableConcat(t1,t2) --concats two tables
-        for i=1,#t2 do
-                t1[#t1+1] = t2[i]
-        end
-        return t1
-end
-
 function compileTable(table)
    local index = 1
    local holder = "{"
@@ -64,56 +24,10 @@ function compileTable(table)
    return holder.."}"
 end
 
-
-function collectAllObjects()
-    local bagPos = bag.getPosition()
-    TableAll = TableConcat(Table2, Table3)
-        for i, v in ipairs(TableAll) do
-                        local offset = 0.075
-                        bagPos.y = bagPos.y + offset
-                        getObjectFromGUID(v).setRotation({0,0,0})
-                        getObjectFromGUID(v).setPositionSmooth(bagPos, false, true)
-        end
-end
-
-function populateBoard()
-
-        --shuffle Position Table
-        local Table1T={}
-
-        for i, v in ipairs(Table1) do
-        	local pos = math.random(1, #Table1T+1)
-        	table.insert(Table1T, pos, v)
-        end
-
-        local Table4T={}
-        for i, v in ipairs(Table4) do
-        	local pos = math.random(1, #Table4T+1)
-        	table.insert(Table4T, pos, v)
-        end
-        for i,v in ipairs(Table1T) do
-                local O = getObjectFromGUID(Table2[i])
-                local P = Table1T[i]["position"]
-                local R = Table1T[i]["rotation"]
-                O.setPosition(board.positionToWorld(P))
-                O.setRotation(R)
-                O.setVelocity{0,0,0}
-                O.rotate({180,0,0})
-        end
-
-        for i,v in ipairs(Table4T) do
-                local O = getObjectFromGUID(Table3[i])
-                local P = Table4T[i]["position"]
-                local R = Table4T[i]["rotation"]
-                O.setPosition(board.positionToWorld(P))
-                O.setRotation(R)
-                O.setVelocity{0,0,0}
-                O.rotate({180,0,0})
-        end
-end
-
-
-function shuffle(Tbl)
+function shuffle(Tbl)  --Shuffle all modular tiles by swapping with eachother. Change
+				-- boardPoints table to reflect new changes without breaking the
+				--move function.
+				-- Added by Mindless
 
 	ObjectTableToShuffle = Tbl
 
@@ -149,7 +63,6 @@ function shuffle(Tbl)
 
 
                 end
-
         end
 end
 
@@ -159,9 +72,6 @@ end
 
 
 function onload()
-
-	asdfasdf = 1
-
         heightOffset = 1
         Table4={
                 {position={0.87, heightOffset, -0.87}, rotation={0, -180, 180}},
@@ -212,7 +122,7 @@ function onload()
         }
 
 
-        Table2 = {  --table of GUIDs of the tiles
+        Table2 = {  --table of GUIDs of the thin tiles
                 "d86d9e",
                 "0be989",
                 "5054d3",
@@ -251,13 +161,13 @@ function onload()
                 "7a9e04",
         }
 
-        ObjectTable2 = {}  --Table of all the slim tiles
+        ObjectTable2 = {}  --Table of all the thin tiles
 
         for B,R in ipairs(Table2) do
                 ObjectTable2[B] = getObjectFromGUID(R)
         end
 
-        Table3 = {
+        Table3 = {  --Table of GUIDs of square tiles (except the starting one)
                 "d98755",
                 "fd4e1e",
                 "568d86",
@@ -270,15 +180,8 @@ function onload()
 
         StartTileGUID = "ebc8ff"
 
-        bag = getObjectFromGUID("987230")
-        board = getObjectFromGUID("40beba")
-        addHotkey("1", collectAllObjects, false)
-        addHotkey("2", populateBoard, false)
         addHotkey("3", hotkey3, false)
 	addHotkey("4", hotkey4, false)
-
-
-
 
         initializePlayerData()
         initializeBoardPoints()
@@ -309,13 +212,10 @@ function update()
 end
 
 function hotkey3()
-	log("shuffle(ObjectTable2)")
 	shuffle(ObjectTable2)
-
 end
 
 function hotkey4()
-	log("shuffle(ObjectTable3)")
 	shuffle(ObjectTable3)
 end
 
@@ -2130,6 +2030,7 @@ end
 
 -- Moving Token By Rolled Amount ----------------------------------------
 function getSquare(position)  --Gives INDEX according to coords
+	-- this is just a mess so I rewrote it and replaced it with getSquare 2
 
   local X = position.x
   local Z = position.z
@@ -2204,7 +2105,7 @@ end
 
 function getSquare2(position) --returns Index of tile of coordinates
 
-	local hitlist = Physics.cast({
+	local hitlist = Physics.cast({  -- casts a line that detects objects in the same X Z coords
 		origin       = {position["x"], position["y"]+10, position["z"]},
 		direction    = {0,-1,0},
 		type         = 1,
@@ -2217,20 +2118,20 @@ function getSquare2(position) --returns Index of tile of coordinates
 	for i,v in ipairs(hitlist) do  --for every object detected in the  coords
 
 		local hitGUID = v["hit_object"].guid  -- get GUID of hit objects
-		for ii,vv in ipairs(boardPoints) do
+		for ii,vv in ipairs(boardPoints) do  --if that Objects GUID ([3]) is in the tile list
 			if hitGUID == vv[3] then
 
-				CorIndex = ii
+				CorIndex = ii  --keep its index in boardPoints to return
 
 			end
 		end
 	end
 
 
-	if boardPoints[CorIndex][3] == "fd4e1e"  then--if index is prison's Index
+	if boardPoints[CorIndex][3] == "fd4e1e"  then--if it is in prison
 
 		local JailTile = getObjectFromGUID("fd4e1e")
-		local LocalPosition = JailTile.positionToLocal(position)
+		local LocalPosition = JailTile.positionToLocal(position)  -- get the position of the coords on the prison tile
 
 		if (LocalPosition["x"] <=0.43) and(LocalPosition["z"]<= 0.43) then
 			log"jail"
@@ -2240,13 +2141,13 @@ function getSquare2(position) --returns Index of tile of coordinates
 			return 10
 		end
 	end
-	if CorIndex == 41 then return 00 end
+	if CorIndex == 41 then return 00 end  --strating tile
 	return CorIndex
 
 end
 
-boardPoints = {nil}
 
+boardPoints = {nil}
 function initializeBoardPoints(save_state)
   boardPoints[01] = {{ 10.8, 2.5, -15.4}, 'Mediterranean Avenue', "f4dc4f"}
   boardPoints[02] = {{  8.1, 2.5, -15.4}, 'Community Chest', "e8eb08"}
@@ -2363,10 +2264,6 @@ function moveToken(theButton, theClicker)
   if currSquare == 0 then
     playerData[playerNum].Token.setPositionSmooth(playerData[playerNum].TokenInitialPosition)
   else
-	  log("currSquare where the pawn will move to")
-	  log(currSquare)
-	  log(boardPoints[currSquare])
-
     playerData[playerNum].Token.setPositionSmooth(boardPoints[currSquare][1])
     --broadcastToAll(boardPoints[currSquare][2], printColor)
   end
@@ -2398,20 +2295,29 @@ function splitString(input)
     return outputs
 end
 
-function asdf(y)
+function debug(y)  -- to make debug tool make a object with the following  code in it
+
+	-- function onDrop(player_color)
+	-- 	Global.call("debug", self.getPosition())
+	-- end
+
 	D= getSquare2(y)
 	log(D)
 	log(boardPoints[D])
-
-
 end
 
 function rollDice(theButton, theClicker)
-	for i = 1,8,1 do
-		v = playerData[i]
-		if playerData[i]["ButtonChip"].getGUID() == theButton.getGUID() then
-			v["Die1"].roll()
-			v["Die2"].roll()
+
+	log(theButton)
+
+	local PlayerNo
+	--
+	for i,v in ipairs(playerData) do
+		if v["Color"] == theClicker then
+			PlayerNo = i
 		end
 	end
+
+	playerData[PlayerNo]["Die1"].roll()
+	playerData[PlayerNo]["Die2"].roll()
 end
