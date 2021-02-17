@@ -1,4 +1,4 @@
-##Shuffle Monopoly
+## Shuffle Monopoly
 
 This is a fork of this TTS monopoly mod
 https://steamcommunity.com/sharedfiles/filedetails/?id=1928312650
